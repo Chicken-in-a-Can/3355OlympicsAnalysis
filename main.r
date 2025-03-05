@@ -1,1 +1,1 @@
-import("ggplot2")
+library("ggplot2")
