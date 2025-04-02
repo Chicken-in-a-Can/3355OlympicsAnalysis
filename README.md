@@ -11,6 +11,7 @@
  - Select after 1900 for SES and Olympics
  - Create decade column
  - Do standard rounding around years ending in 5s
+ - Remove blank data (age in Olympics, education in SES)
 
 ### 4/16/2025
  - Determine specific plots/charts
