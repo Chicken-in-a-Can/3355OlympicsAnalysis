@@ -27,8 +27,8 @@ median_ages <- NULL
 
 for (i in unique_years) {
   print(i)
-  mean_ages <- c(ages, mean(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
-  median_ages <- c(ages, median(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
+  mean_ages <- c(mean_ages, mean(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
+  median_ages <- c(median_ages, median(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
 }
 mean_ages
 median_ages
