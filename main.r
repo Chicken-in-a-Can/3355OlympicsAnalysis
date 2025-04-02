@@ -24,10 +24,13 @@ subset_swim <- summer[which(summer[, "Sport"] == "Swimming"), ]
 unique_years <- sort(unique(subset_swim[, "Year"]))
 mean_ages <- NULL
 median_ages <- NULL
+range_ages <- NULL
 
 for (i in unique_years) {
   mean_ages <- c(mean_ages, mean(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
   median_ages <- c(median_ages, median(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
+  range_ages <- c(range_ages, range(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
 }
 mean_ages
 median_ages
+range_ages
