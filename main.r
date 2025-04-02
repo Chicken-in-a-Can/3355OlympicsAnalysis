@@ -31,6 +31,7 @@ for (i in unique_years) {
   median_ages <- c(median_ages, median(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
   range_ages <- c(range_ages, range(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
 }
+
 mean_ages
 median_ages
 range_ages
