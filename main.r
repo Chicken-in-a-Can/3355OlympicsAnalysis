@@ -1,22 +1,40 @@
 library("ggplot2")
 library("dplyr")
 
+# Load datasets
 summer_olympics <- read.csv("Athletes_summer_games.csv", header = TRUE)
 winter_olympics <- read.csv("Athletes_summer_games.csv", header = TRUE)
 regions <- read.csv("regions.csv", header = TRUE)
 global_ses <- read.csv("GLOB.SES.csv", header = TRUE)
 
+# Clean olympics dataset
 olympics <- merge(summer_olympics, winter_olympics)
 olympics <- olympics[which(olympics$Sport == "Swimming"), ]
-olympics$Medal[which(olympics$Medal == "")] <- NA 
-olympics$region <- NULL
+olympics$Year <- round(olympics$Year, -1)
 
+olympics$Medal[which(olympics$Medal == "")] <- NA 
+olympics$Age[which(olympics$Age == "")] <- NA 
+
+olympics$region <- NULL
+olympics$X <- NULL
+
+
+# Clean regions dataset
 names(regions)[names(regions) == "region"] <- "country"
 regions$country <- ifelse(regions$notes == "" | regions$notes == "NaN", regions$country, regions$notes)
+
 regions$notes = NULL
 regions$X = NULL
 
+
+# Clean SES dataset
+names(global_ses)[names(global_ses) == "year"] <- "Year"
+
+
+# Merge datasets
 merged_data <- left_join(regions, olympics, by = "NOC")
+merged_data <- left_join(merged_data, global_ses, by = c("country", "Year"))
+merged_data
 
 # Plotting Year vs Age (in ggplot2) where people won a medal
 # Colors based on medal won
