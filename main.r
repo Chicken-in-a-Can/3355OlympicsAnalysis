@@ -10,10 +10,12 @@ global_ses <- read.csv("GLOB.SES.csv", header = TRUE)
 # Clean olympics dataset
 olympics <- merge(summer_olympics, winter_olympics)
 olympics <- olympics[which(olympics$Sport == "Swimming"), ]
-olympics$Year <- round(olympics$Year, -1)
+olympics$decade <- round(olympics$Year, -1)
 
 olympics$Medal[which(olympics$Medal == "")] <- NA 
 olympics$Age[which(olympics$Age == "")] <- NA 
+
+olympics <- filter(olympics, !is.na(Age))
 
 olympics$region <- NULL
 olympics$X <- NULL
@@ -28,18 +30,21 @@ regions$X = NULL
 
 
 # Clean SES dataset
-names(global_ses)[names(global_ses) == "year"] <- "Year"
+global_ses <- filter(global_ses, "year" >= 1900)
+global_ses <- select(global_ses, -unid)
+names(global_ses)[names(global_ses) == "year"] <- "decade"
 
 
 # Merge datasets
 merged_data <- left_join(regions, olympics, by = "NOC")
-merged_data <- left_join(merged_data, global_ses, by = c("country", "Year"))
+merged_data <- left_join(merged_data, global_ses, by = c("country", "decade"))
 merged_data
 
 # Plotting Year vs Age (in ggplot2) where people won a medal
 # Colors based on medal won
-ggplot(data = merged_data[!is.na(olympics$Medal), ]) +
+ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
   geom_point(mapping = aes(x = Year, y = Age, color = as.factor(Medal))) + 
+  geom_smooth(mapping = aes(x = Year, y = Age, color = as.factor(Medal))) + 
   #geom_jitter(mapping = aes(x = Year, y = Age, color = as.factor(Medal))) + 
   scale_color_manual(values = c("#CD7F32", "#C0C0C0", "#FFD700")) + 
   labs(x = "Competition Year", y = "Athlete Age", title = "Olympics Medal Winners", color = "Medal Won")
