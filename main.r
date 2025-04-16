@@ -6,6 +6,7 @@ summer_olympics <- read.csv("Athletes_summer_games.csv", header = TRUE)
 winter_olympics <- read.csv("Athletes_summer_games.csv", header = TRUE)
 regions <- read.csv("regions.csv", header = TRUE)
 global_ses <- read.csv("GLOB.SES.csv", header = TRUE)
+continent <- read.csv("Countries by continents.csv", header = TRUE)
 
 # Clean olympics dataset
 olympics <- merge(summer_olympics, winter_olympics)
@@ -34,11 +35,23 @@ global_ses <- filter(global_ses, "year" >= 1900)
 global_ses <- select(global_ses, -unid)
 names(global_ses)[names(global_ses) == "year"] <- "decade"
 
-
 # Merge datasets
 merged_data <- left_join(regions, olympics, by = "NOC")
 merged_data <- left_join(merged_data, global_ses, by = c("country", "decade"))
-merged_data
+
+mean_ages <- merged_data %>%
+  filter(Year == 2000) %>%
+  group_by(country) %>%
+  summarise(age = mean(Age, na.rm = TRUE)) %>%
+  data.frame()
+  
+ses <- merged_data %>%
+  filter(Year == 2000) %>%
+  group_by(country) %>%
+  summarise(ses = mean(SES, na.rm = TRUE)) %>%
+  data.frame()
+
+age_ses <- left_join(mean_ages, ses, by = "country")
 
 # Plotting Year vs Age (in ggplot2) where people won a medal
 # Colors based on medal won
@@ -48,6 +61,9 @@ ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
   #geom_jitter(mapping = aes(x = Year, y = Age, color = as.factor(Medal))) + 
   scale_color_manual(values = c("#CD7F32", "#C0C0C0", "#FFD700")) + 
   labs(x = "Competition Year", y = "Athlete Age", title = "Olympics Medal Winners", color = "Medal Won")
+
+ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm")
+
 
 #mean/median age for each year
 summer <- read.csv("Athletes_summer_games.csv")                                 
