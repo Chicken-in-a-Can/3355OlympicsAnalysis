@@ -3,6 +3,14 @@
  - [Country QoL](https://www.kaggle.com/datasets/sdorius/globses)
  - [Countries by Continent](https://www.kaggle.com/datasets/hserdaraltan/countries-by-continent)
 
+#### Specific Countries:
+ - USA
+ - Argentina
+ - Egypt
+ - Germany
+ - Japan
+ - India
+ - Australia
 
 ## Steps Forward
 ### 4/9/2025
