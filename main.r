@@ -31,6 +31,9 @@ regions$country <- ifelse(regions$notes == "" | regions$notes == "NaN", regions$
 regions$notes = NULL
 regions$X = NULL
 
+regions <- regions %>%
+  mutate(country = replace(country, country == "USA", "United States")) %>%
+  mutate(country = replace(country, country == "UK", "United Kingdom"))
 
 # Clean SES dataset
 global_ses <- filter(global_ses, "year" >= 1900)
@@ -39,22 +42,27 @@ names(global_ses)[names(global_ses) == "year"] <- "decade"
 
 # Merge datasets
 merged_data <- left_join(regions, olympics, by = "NOC")
-merged_data <- left_join(merged_data, global_ses, by = c("country", "decade")) %>%
-  left_join(continent, by = "country") #join continent data with merged_data
+merged_data <- left_join(merged_data, global_ses, by = c("country", "decade"))
+merged_data <- left_join(merged_data, continent, by = "country") #join continent data with merged_data
 
 mean_ages <- merged_data %>%
-  filter(Year == 2000) %>%
-  group_by(country) %>%
+  filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  group_by(Year, country) %>%
   summarise(age = mean(Age, na.rm = TRUE)) %>%
   data.frame()
 
 ses <- merged_data %>%
-  filter(Year == 2000) %>%
-  group_by(country) %>%
+  filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  group_by(Year, country) %>%
   summarise(ses = mean(SES, na.rm = TRUE)) %>%
   data.frame()
 
-age_ses <- left_join(mean_ages, ses, by = "country")
+age_ses <- left_join(mean_ages, ses, by = c("country", "Year"))
+
+age_ses$Year.y = NULL
+names(age_ses)[names(age_ses) == "Year.x"] <- "Year"
+
+age_ses
 
 # Plotting Year vs Age (in ggplot2) where people won a medal
 # Colors based on medal won
@@ -65,7 +73,11 @@ ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
   scale_color_manual(values = c("#CD7F32", "#C0C0C0", "#FFD700")) + 
   labs(x = "Competition Year", y = "Athlete Age", title = "Olympics Medal Winners", color = "Medal Won")
 
-ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm")
+ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm") +
+  facet_wrap(vars(Year)) + 
+  labs(title = "Age of athletes vs SES across time") +
+  xlab("Socio-economic Score") +
+  ylab("Age of Athletes")
 
 #April 22, 2025
 
