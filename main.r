@@ -7,6 +7,8 @@ winter_olympics <- read.csv("Athletes_summer_games.csv", header = TRUE)
 regions <- read.csv("regions.csv", header = TRUE)
 global_ses <- read.csv("GLOB.SES.csv", header = TRUE)
 continent <- read.csv("Countries by continents.csv", header = TRUE)
+#rename column names for continent so it matches with olympics data
+colnames(continent) <- c("continent", "country")
 
 # Clean olympics dataset
 olympics <- merge(summer_olympics, winter_olympics)
@@ -37,14 +39,15 @@ names(global_ses)[names(global_ses) == "year"] <- "decade"
 
 # Merge datasets
 merged_data <- left_join(regions, olympics, by = "NOC")
-merged_data <- left_join(merged_data, global_ses, by = c("country", "decade"))
+merged_data <- left_join(merged_data, global_ses, by = c("country", "decade")) %>%
+  left_join(continent, by = "country") #join continent data with merged_data
 
 mean_ages <- merged_data %>%
   filter(Year == 2000) %>%
   group_by(country) %>%
   summarise(age = mean(Age, na.rm = TRUE)) %>%
   data.frame()
-  
+
 ses <- merged_data %>%
   filter(Year == 2000) %>%
   group_by(country) %>%
@@ -64,23 +67,32 @@ ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
 
 ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm")
 
+#April 22, 2025
 
-#mean/median age for each year
-summer <- read.csv("Athletes_summer_games.csv")                                 
-socioeconomic <- read.csv("GLOB.SES.csv")
-subset_swim <- summer[which(summer[, "Sport"] == "Swimming"), ]
+#Career Length by Gender
 
-unique_years <- sort(unique(subset_swim[, "Year"]))
-mean_ages <- NULL
-median_ages <- NULL
-range_ages <- NULL
+#data frame with just name and gender
+name_gender <- merged_data %>% select(Name, Sex, continent)
 
-for (i in unique_years) {
-  mean_ages <- c(mean_ages, mean(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
-  median_ages <- c(median_ages, median(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
-  range_ages <- c(range_ages, range(subset_swim[which(subset_swim[, "Year"] == i), "Age"], na.rm = TRUE))
-}
+career <- merged_data %>%
+  group_by(Name) %>% #for each athlete
+  summarise(career_length = max(Year) - min(Year)) %>% #find difference in last and first olympics
+  left_join(name_gender, by = "Name") #join with data frame containing name and gender of athlete
+  
+#to consider: do we want to dispose of NA continent?
+ggplot(data = career) + geom_bar(mapping = aes(x = career_length, fill = Sex))
+ggplot(data = career) + geom_bar(mapping = aes(x = career_length, fill = continent))
 
-mean_ages
-median_ages
-range_ages
+# Year by Average Age - compare countries, color by gender
+#cont_gen <- merged_data %>% select(Sex, country, continent)
+avg_age <- merged_data %>%
+  group_by(country, Year) %>% #for each year and country
+  summarise(mean_age = mean(Age, na.rm = TRUE)) %>% #find the mean age
+  left_join(continent, by = "country") #join with continent
+
+ggplot(data = avg_age) + 
+  geom_smooth(mapping = aes(x = Year, y = mean_age, color = continent), se = FALSE)
+
+#tried doing stuff with gender but it got weird with a many to many relationship
+
+            
