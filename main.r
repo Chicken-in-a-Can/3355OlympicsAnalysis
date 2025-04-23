@@ -45,6 +45,7 @@ merged_data <- left_join(regions, olympics, by = "NOC")
 merged_data <- left_join(merged_data, global_ses, by = c("country", "decade"))
 merged_data <- left_join(merged_data, continent, by = "country") #join continent data with merged_data
 
+# Create data for age cs ses, duplicates allowed
 mean_ages <- merged_data %>%
   filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
   group_by(Year, country) %>%
@@ -62,8 +63,10 @@ age_ses <- left_join(mean_ages, ses, by = c("country", "Year"))
 age_ses$Year.y = NULL
 names(age_ses)[names(age_ses) == "Year.x"] <- "Year"
 
+# Create data for age cs ses, no duplicates allowed
 mean_ages_no_dup <- merged_data %>%
   filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  #filter(country %in% c("United States", "Argentina", "Egypt", "Germany", "Japan", "India", "Australia")) %>%
   distinct(Name, Year, .keep_all = TRUE) %>%
   group_by(Year, country) %>%
   summarise(age = mean(Age, na.rm = TRUE)) %>%
@@ -71,12 +74,13 @@ mean_ages_no_dup <- merged_data %>%
 
 ses_no_dup <- merged_data %>%
   filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  #filter(country %in% c("United States", "Argentina", "Egypt", "Germany", "Japan", "India", "Australia")) %>%
   distinct(Name, Year, .keep_all = TRUE) %>%
   group_by(Year, country) %>%
   summarise(ses = mean(SES, na.rm = TRUE)) %>%
   data.frame()
 
-age_ses_no_dup <- left_join(mean_ages, ses, by = c("country", "Year"))
+age_ses_no_dup <- left_join(mean_ages_no_dup, ses_no_dup, by = c("country", "Year"))
 
 age_ses_no_dup$Year.y = NULL
 names(age_ses_no_dup)[names(age_ses_no_dup) == "Year.x"] <- "Year"
@@ -90,12 +94,14 @@ ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
   scale_color_manual(values = c("#CD7F32", "#C0C0C0", "#FFD700")) + 
   labs(x = "Competition Year", y = "Athlete Age", title = "Olympics Medal Winners", color = "Medal Won")
 
+# plotting age data vs SES. Duplicates allowed
 ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm") +
   facet_wrap(vars(Year)) + 
   labs(title = "Age of athletes vs SES across time") +
   xlab("Socio-economic Score") +
   ylab("Age of Athletes")
 
+# plotting age data vs SES. Duplicates not allowed
 ggplot(data = age_ses_no_dup) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm") +
   facet_wrap(vars(Year)) + 
   labs(title = "Age of athletes vs SES across time") +
