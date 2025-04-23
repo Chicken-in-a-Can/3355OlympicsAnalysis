@@ -24,10 +24,10 @@
 
 ### 4/16/2025
  - Determine specific plots/charts
- - Year vs Average Age (compare countries), color by gender
+ - Year vs Average Age (compare countries), color by gender (Ananya)
  - Age vs SES (decades/20 years, facet wrap)
  - Gender ratio/Gender count by year vs SES
- - Career length, by gender
+ - Career length, by gender (Ananya)
  - Medal Graph
 
 ### 4/23/2025
