@@ -32,6 +32,7 @@
 
 ### 4/23/2025
  - Create PowerPoint
+ - Add statistics info - hypothesis testing, etc.
 
 ### 4/30/2025
  - Finalize/practice Presentation
