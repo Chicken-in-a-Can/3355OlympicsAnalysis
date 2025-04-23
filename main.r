@@ -62,7 +62,24 @@ age_ses <- left_join(mean_ages, ses, by = c("country", "Year"))
 age_ses$Year.y = NULL
 names(age_ses)[names(age_ses) == "Year.x"] <- "Year"
 
-age_ses
+mean_ages_no_dup <- merged_data %>%
+  filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  distinct(Name, Year, .keep_all = TRUE) %>%
+  group_by(Year, country) %>%
+  summarise(age = mean(Age, na.rm = TRUE)) %>%
+  data.frame()
+
+ses_no_dup <- merged_data %>%
+  filter(Year %in% c(1900, 1920, 1960, 1980, 2000)) %>%
+  distinct(Name, Year, .keep_all = TRUE) %>%
+  group_by(Year, country) %>%
+  summarise(ses = mean(SES, na.rm = TRUE)) %>%
+  data.frame()
+
+age_ses_no_dup <- left_join(mean_ages, ses, by = c("country", "Year"))
+
+age_ses_no_dup$Year.y = NULL
+names(age_ses_no_dup)[names(age_ses_no_dup) == "Year.x"] <- "Year"
 
 # Plotting Year vs Age (in ggplot2) where people won a medal
 # Colors based on medal won
@@ -74,6 +91,12 @@ ggplot(data = merged_data[!is.na(merged_data$Medal), ]) +
   labs(x = "Competition Year", y = "Athlete Age", title = "Olympics Medal Winners", color = "Medal Won")
 
 ggplot(data = age_ses) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm") +
+  facet_wrap(vars(Year)) + 
+  labs(title = "Age of athletes vs SES across time") +
+  xlab("Socio-economic Score") +
+  ylab("Age of Athletes")
+
+ggplot(data = age_ses_no_dup) + geom_smooth(mapping = aes(x = ses, y = age), method = "lm") +
   facet_wrap(vars(Year)) + 
   labs(title = "Age of athletes vs SES across time") +
   xlab("Socio-economic Score") +
