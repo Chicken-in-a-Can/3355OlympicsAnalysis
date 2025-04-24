@@ -119,10 +119,32 @@ career <- merged_data %>%
   group_by(Name) %>% #for each athlete
   summarise(career_length = max(Year) - min(Year)) %>% #find difference in last and first olympics
   left_join(name_gender, by = "Name") #join with data frame containing name and gender of athlete
-  
+
+career <- career[which(!is.na(career[,"continent"])), ]
+
 #to consider: do we want to dispose of NA continent?
 ggplot(data = career) + geom_bar(mapping = aes(x = career_length, fill = Sex))
 ggplot(data = career) + geom_bar(mapping = aes(x = career_length, fill = continent))
+
+#Number of olympics
+name_sex <- merged_data %>% 
+  distinct(Name, Sex, continent, country)
+
+num_games <- merged_data %>%
+  group_by(Name) %>% #for each athlete
+  summarise(num_olympics = n_distinct(Year)) %>% 
+  left_join(name_sex, by = "Name") #join with data frame containing name and gender of athlete
+
+num_games <- num_games[which(!is.na(num_games[,"continent"])), ]
+num_games <- num_games[which(!is.na(num_games[,"Sex"])), ]
+ggplot(data = num_games) + geom_bar(mapping = aes(x = num_olympics, fill = continent))
+
+ggplot(data = num_games) + geom_bar(mapping = aes(x = num_olympics, fill = Sex)) +
+  labs(title = "Number of Olympics Participated In by Gender", x = "Number of Olympics", y = "Count of Athletes" )
+
+ggplot(data = subset(num_games, country == c("Australia", "India", "Japan", "Germany", "Egypt", "Argentina", "United States"))) +
+  geom_bar(mapping = aes(x = num_olympics, fill = country)) +
+  labs(title = "Number of Olympics Participated In by Country", x = "Number of Olympics", y = "Count of Athletes" )
 
 # Year by Average Age - compare countries, color by gender
 #cont_gen <- merged_data %>% select(Sex, country, continent)
@@ -131,9 +153,14 @@ avg_age <- merged_data %>%
   summarise(mean_age = mean(Age, na.rm = TRUE)) %>% #find the mean age
   left_join(continent, by = "country") #join with continent
 
+avg_age <- avg_age[which(!is.na(avg_age[,"continent"])), ]
+
 ggplot(data = avg_age) + 
-  geom_smooth(mapping = aes(x = Year, y = mean_age, color = continent), se = FALSE)
+  geom_smooth(mapping = aes(x = Year, y = mean_age, color = continent), se = FALSE) +
+  labs(title = "Average Age over Time (Continent)", x = "Year", y = "Average Age") +
+  xlim(1896, 2025)
 
-#tried doing stuff with gender but it got weird with a many to many relationship
-
-            
+ggplot(data = subset(avg_age, country == c("Australia", "India", "Japan", "Germany", "Egypt", "Argentina", "United States"))) + 
+  geom_smooth(mapping = aes(x = Year, y = mean_age, color = country), se = FALSE) +
+  labs(title = "Average Age over Time (Country)", x = "Year", y = "Average Age") +
+  xlim(1896, 2025)
