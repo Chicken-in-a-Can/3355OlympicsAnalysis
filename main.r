@@ -151,16 +151,39 @@ ggplot(data = subset(num_games, country == c("Australia", "India", "Japan", "Ger
 avg_age <- merged_data %>%
   group_by(country, Year) %>% #for each year and country
   summarise(mean_age = mean(Age, na.rm = TRUE)) %>% #find the mean age
-  left_join(continent, by = "country") #join with continent
+  left_join(continent, by = "country") #join with continent %>%
 
 avg_age <- avg_age[which(!is.na(avg_age[,"continent"])), ]
 
 ggplot(data = avg_age) + 
+  geom_smooth(mapping = aes(x = Year, y = mean_age), se = FALSE) +
+  labs(title = "Average Age of Olympic Swimmers over Time", x = "Year", y = "Mean Age") +
+  xlim(1896, 2025) + theme_minimal()
+
+ggplot(data = subset(avg_age)) + 
   geom_smooth(mapping = aes(x = Year, y = mean_age, color = continent), se = FALSE) +
-  labs(title = "Average Age over Time (Continent)", x = "Year", y = "Average Age") +
-  xlim(1896, 2025)
+  labs(title = "Average Age of Olympic Swimmers over Time (Continent)", x = "Year", y = "Average Age") +
+  xlim(1896, 2025) + theme_minimal()
 
 ggplot(data = subset(avg_age, country == c("Australia", "India", "Japan", "Germany", "Egypt", "Argentina", "United States"))) + 
   geom_smooth(mapping = aes(x = Year, y = mean_age, color = country), se = FALSE) +
   labs(title = "Average Age over Time (Country)", x = "Year", y = "Average Age") +
   xlim(1896, 2025)
+
+#Hypothesis Test
+
+#avg_age <- avg_age %>% filter(continent %in% c("Asia", "Africa"))
+y <- avg_age[, "mean_age", drop = TRUE]
+x <- avg_age[, "Year", drop = TRUE]
+cont <- factor(avg_age[, "continent", drop = TRUE],
+levels = c("Asia", "Europe", "Africa", "North America", "South America", "Oceania"))
+x2 <- x^2
+
+new_df <- data.frame(x, x2, cont)
+#new_df <- data.frame(x, cont)
+#m <- lm
+m <- lm(y ~ x + x2 + cont)
+summary(m)
+avg_age$age_pred <- predict(m, new_df)
+#hist(resid(m))
+#plot(x, avg_age$age_pred)
